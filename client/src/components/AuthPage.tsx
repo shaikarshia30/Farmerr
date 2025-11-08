@@ -56,7 +56,7 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
     if (otp.length === 6) {
       toast({
         title: mode === "login" ? "Login successful!" : "Registration successful!",
-        description: `Welcome to Former Code Connect as a ${role}`,
+        description: `Welcome to Farmer-Coolie Connect as a ${role}`,
       });
 
       // Navigate to appropriate dashboard
@@ -113,7 +113,7 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
         <CardHeader className="space-y-1">
           <div className="mx-auto mb-4 flex items-center gap-2">
             <Tractor className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold">Former Code Connect</span>
+            <span className="text-lg font-semibold">Farmer-Coolie Connect</span>
           </div>
           <CardTitle className="text-2xl text-center">
             {mode === "login" ? "Welcome Back" : "Create Your Account"}

@@ -55,7 +55,7 @@ export default function LandingPage() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Tractor className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold">Former Code Connect</span>
+            <span className="text-lg font-semibold">Farmer-Coolie Connect</span>
           </div>
           <nav className="hidden items-center gap-6 md:flex">
             <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">
@@ -206,7 +206,7 @@ export default function LandingPage() {
               Ready to Transform Your Agricultural Work?
             </h2>
             <p className="mb-8 text-lg text-primary-foreground/90">
-              Join thousands of farmers, workers, and equipment providers already using Former Code Connect
+              Join thousands of farmers, workers, and equipment providers already using Farmer-Coolie Connect
             </p>
             <Link href="/register">
               <Button
@@ -229,7 +229,7 @@ export default function LandingPage() {
             <div>
               <div className="mb-4 flex items-center gap-2">
                 <Tractor className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Former Code Connect</span>
+                <span className="font-semibold">Farmer-Coolie Connect</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Connecting agriculture communities for better opportunities
@@ -260,7 +260,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-            © 2025 Former Code Connect. All rights reserved.
+            © 2025 Farmer-Coolie Connect. All rights reserved.
           </div>
         </div>
       </footer>

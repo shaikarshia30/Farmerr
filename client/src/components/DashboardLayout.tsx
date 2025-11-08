@@ -82,7 +82,7 @@ export default function DashboardLayout({ children, userRole, userName = "User" 
             <SidebarGroup>
               <div className="mb-4 flex items-center gap-2 px-4 pt-4">
                 <Tractor className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Former Code</span>
+                <span className="font-semibold">Farmer-Coolie</span>
               </div>
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
