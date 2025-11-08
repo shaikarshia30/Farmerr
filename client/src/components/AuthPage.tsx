@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Tractor, Users, Wrench, MapPin, Shield, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 type AuthMode = "login" | "register";
 type UserRole = "farmer" | "coolie" | "rental";
@@ -27,48 +28,81 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
   const [role, setRole] = useState<UserRole>(defaultRole);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     location: "",
+    latitude: "",
+    longitude: "",
     farmSize: "",
     vehicleType: "",
   });
 
-  const handleSendOTP = (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sending OTP to:", formData.phone);
+    setIsLoading(true);
     
-    // Simulate OTP sending
-    toast({
-      title: "OTP Sent!",
-      description: `Verification code sent to ${formData.phone}`,
-    });
-    
-    setOtpSent(true);
+    try {
+      await apiRequest("POST", "/api/auth/send-otp", { phone: formData.phone });
+      
+      toast({
+        title: "OTP Sent!",
+        description: `Verification code sent to ${formData.phone}`,
+      });
+      
+      setOtpSent(true);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerifyOTP = (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Verifying OTP:", otp, { mode, role, formData });
+    setIsLoading(true);
     
-    // Simulate OTP verification
-    if (otp.length === 6) {
+    try {
+      const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
+      const payload = mode === "login" 
+        ? { phone: formData.phone, otp }
+        : {
+            phone: formData.phone,
+            otp,
+            name: formData.name,
+            role,
+            location: formData.location,
+            latitude: formData.latitude || undefined,
+            longitude: formData.longitude || undefined,
+            farmSize: formData.farmSize ? parseInt(formData.farmSize) : undefined,
+            vehicleType: formData.vehicleType || undefined,
+          };
+
+      const result = await apiRequest("POST", endpoint, payload);
+      const data = await result.json();
+
       toast({
         title: mode === "login" ? "Login successful!" : "Registration successful!",
-        description: `Welcome to Farmer-Coolie Connect as a ${role}`,
+        description: `Welcome to Farmer-Coolie Connect`,
       });
 
       // Navigate to appropriate dashboard
       setTimeout(() => {
-        navigate(`/dashboard/${role}`);
-      }, 1000);
-    } else {
+        navigate(`/dashboard/${data.user.role}`);
+      }, 500);
+    } catch (error: any) {
       toast({
-        title: "Invalid OTP",
-        description: "Please enter a valid 6-digit code",
+        title: "Error",
+        description: error.message || "Authentication failed",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,7 +111,12 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setFormData({ ...formData, location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` });
+          setFormData({ 
+            ...formData, 
+            location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            latitude: latitude.toString(),
+            longitude: longitude.toString(),
+          });
           toast({
             title: "Location captured",
             description: "Your location has been added to your profile",
@@ -94,12 +133,24 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
     }
   };
 
-  const handleResendOTP = () => {
-    console.log("Resending OTP to:", formData.phone);
-    toast({
-      title: "OTP Resent!",
-      description: `New verification code sent to ${formData.phone}`,
-    });
+  const handleResendOTP = async () => {
+    setIsLoading(true);
+    try {
+      await apiRequest("POST", "/api/auth/send-otp", { phone: formData.phone });
+      
+      toast({
+        title: "OTP Resent!",
+        description: `New verification code sent to ${formData.phone}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChangePhone = () => {
@@ -226,9 +277,9 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
                   </div>
                 )}
 
-                <Button type="submit" className="w-full" data-testid="button-send-otp">
+                <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-send-otp">
                   <Smartphone className="mr-2 h-4 w-4" />
-                  Send OTP
+                  {isLoading ? "Sending..." : "Send OTP"}
                 </Button>
               </form>
             </>
@@ -258,10 +309,10 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
               <Button
                 type="submit"
                 className="w-full"
-                disabled={otp.length !== 6}
+                disabled={otp.length !== 6 || isLoading}
                 data-testid="button-verify-otp"
               >
-                Verify & Continue
+                {isLoading ? "Verifying..." : "Verify & Continue"}
               </Button>
 
               <div className="flex flex-col gap-2 text-center text-sm">
@@ -269,6 +320,7 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
                   type="button"
                   variant="ghost"
                   onClick={handleResendOTP}
+                  disabled={isLoading}
                   data-testid="button-resend-otp"
                 >
                   Resend OTP
@@ -277,6 +329,7 @@ export default function AuthPage({ mode, defaultRole = "farmer" }: AuthPageProps
                   type="button"
                   variant="ghost"
                   onClick={handleChangePhone}
+                  disabled={isLoading}
                   data-testid="button-change-phone"
                 >
                   Change Phone Number
